@@ -40,3 +40,20 @@ class FoodListViewSet(viewsets.ModelViewSet):
         if Category_id is not None:
             queryset = queryset.filter(foodCategory=Category_id)
         return queryset
+
+
+
+# Новый ViewSet для получения блюд по категории
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+class CategoryFoodViewSet(viewsets.ViewSet):
+    @action(detail=True, methods=['get'])
+    def foods(self, request, pk=None):
+        try:
+            category = Category.objects.get(pk=pk)
+            foods = Food.objects.filter(foodCategory=category)
+            serializer = FoodListSerializer(foods, many=True, context={"request": request})
+            return Response(serializer.data)
+        except Category.DoesNotExist:
+            return Response({'error': 'Category not found'}, status=404)
